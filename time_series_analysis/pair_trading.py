@@ -9,7 +9,7 @@ from statsmodels.tsa.stattools import adfuller
 from plots.time_series_plots import time_series_plot
 
 
-# load tech data
+# load tech data from meta file and IEX
 # todo: download full universe tech data from IEX
 universe_tech = ['FB', 'AAPL']
 tech_data = load_equities_data_from_disk(universe_tech, frequency='B')
