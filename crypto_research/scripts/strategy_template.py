@@ -3,7 +3,7 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 
-from backtesting.WalkForwardBacktest import WalkForwardBtCompounding
+from backtesting.WalkForwardBacktest import WalkForwardBtCompounding, WalkForwardBtNoCompounding
 from data_loading.load_from_disk.load_equities_data import load_equities_data_from_disk
 from signals.momentum.time_series_momentum import exp_ma_crossover
 from utils.splines import spline_series, grd_spline
@@ -27,7 +27,7 @@ symbols_list = ['AAPL', 'AMZN', 'FB', 'NFLX', 'GOOG']
 # etf_data = load_etf_data_from_disk(['FXI', 'SPY'], frequency='B')
 tech_data = load_equities_data_from_disk(symbols_list, frequency='B')
 
-close_data = tech_data.get_cross_sectional_view('close')
+close_data = tech_data.get_cross_sectional_view('close').dropna(inplace=True)
 # open_data = tech_data.get_cross_sectional_view('Open')
 
 # btcusd = crypto_data.raw_data.BTCUSD.get_df_view(['Open', 'High', 'Low', 'Close', 'VolumeUSD'])

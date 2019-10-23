@@ -16,7 +16,7 @@ def load_crypto_data_from_disk(universe_symbols, frequency):
         data_df = data_df.resample(frequency).last()
         for date in data_df.index:
             if data_df.loc[date].isna().sum() == data_df.shape[1]:
-                print("Warning: After resamling, no data available for " + crypto + " for date " + str(date))
+                print("Warning: After resampling, no data available for " + crypto + " for date " + str(date))
         universe_data[crypto] = data_df
 
     universe.read_universe_data(universe_data)

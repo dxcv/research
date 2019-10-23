@@ -23,7 +23,7 @@ def calculate_exp_vol(series, min_periods=0):
     # calculates exponential moving vol
 
     # infer frequency
-    samples_per_day = calculate_samples_per_day(series.index)
+    # samples_per_day = calculate_samples_per_day(series.index)
     window = series.shape[0]
     span = 2 * window - 1
 

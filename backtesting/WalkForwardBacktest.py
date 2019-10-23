@@ -273,13 +273,6 @@ class WalkForwardBtCompounding(object):
         """
         now = dates_series.dt_now
         next_date = dates_series.dt_next
-        # if allow_leverage false weights at each date must sum to 1, we are always fully invested
-        # if only one asset has a non-zero weight, this asset will thus obtain a weight of one
-        # todo: this needs to be re-written, don't use allow_leverage, pass default gross_leverage=1 for no lev case
-        # holdings = self.scaled_weights.loc[now] * net_asset_value_now / \
-        #            (self.open.loc[next_date] * self.point_value_instrument.loc[now] *
-        #             self.scaled_weights.loc[now].abs().sum())
-
         holdings = self.scaled_weights.loc[now] * net_asset_value_now / (
                     self.open.loc[next_date] * self.point_value_instrument.loc[now])
         return holdings
