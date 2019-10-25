@@ -41,6 +41,10 @@ class WalkForwardBtCompounding(object):
             self.constant_short = -1
         else:
             self.constant_exposure = False
+        if 'config' in kwargs:
+            self.max_pos_leverage = kwargs['config'].position_limit
+            self.max_net_leverage = kwargs['config'].max_net_leverage
+            self.max_gross_leverage = kwargs['config'].max_gross_leverage
 
         # weights
         self.weights = weights.loc[weights.first_valid_index():]  # trading weights/signals (supplied)

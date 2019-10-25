@@ -1,9 +1,11 @@
 import pandas as pd
 
 from backtesting.WalkForwardBacktest import WalkForwardBtNoCompounding
+from backtesting.portfolio_analysis import PortfolioResults, Comparis
 from classes.portfolio_construction.HRP import HRP
 from configs.universe_spec import universe_crypto
 from data_loading.load_from_disk.load_crypto_data import load_crypto_data_from_disk
+
 
 # load crypto data
 crypto = load_crypto_data_from_disk(universe_crypto, frequency='1D')
@@ -35,9 +37,15 @@ bt_ew.calculate_backtest_performance()
 ax = bt_hrp.backtest.net_asset_value.plot(label='HRP', legend=True)
 bt_ew.backtest.net_asset_value.plot(ax=ax, label='EW', legend=True)
 
-# calculate daily turnover
-hrp.hrp_weights.diff().abs().sum(axis=1).mean()
-# I should really do this with target weights - implied weights at turnover point, ie holdings * price
-# (hrp.hrp_weights - (bt_hrp.backtest.holdings.shift(1) * bt_hrp.close)/100).abs().sum(axis=1).mean()
-# yesterdays holdings * todays price
+# analysis
+results = PortfolioResults(bt_hrp, name='HRP')
+results_ew = PortfolioResults(bt_ew, name='EW')
+
+# comparison between strategies
+comparison = Comparis(hrp=results, ew=results_ew)
+comparison.create_results_comparison()
+
+
+
+
 
