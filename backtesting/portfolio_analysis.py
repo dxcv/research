@@ -10,12 +10,20 @@ class PortfolioResults(object):
     proper frequency and re-balancing handling for each calculation (incl. base case monthly data)
     """
 
-    def __init__(self, strategy, name='default_strategy'):
+    def __init__(self, strategy, name='default_strategy', date=None):
+        # todo: way to handle a variable start date: needed in particular for Comparis
         self.net_asset_value = strategy.backtest.net_asset_value
         self.holdings = strategy.backtest.holdings
         self.instrument_prices = strategy.close
         self.portfolio_weights = strategy.scaled_weights
         self.frequency = strategy.backtest.net_asset_value.index.freq
+        if date is not None:
+            self.net_asset_value = strategy.backtest.net_asset_value.loc[date:]
+            self.holdings = strategy.backtest.holdings.loc[date:]
+            self.instrument_prices = strategy.close.loc[date:]
+            self.portfolio_weights = strategy.scaled_weights.loc[date:]
+            self.frequency = strategy.backtest.net_asset_value.index.freq
+
         self.name = name
 
     def _calculate_turnover_series(self):
@@ -42,11 +50,13 @@ class PortfolioResults(object):
         frequency = self.frequency
         if frequency == 'D':
             scaling = 365
-        elif frequency == 'BD':
+        elif frequency == 'B':
             scaling = 260
-        else:
-            assert frequency == '1H'
+        elif frequency == '1H':
             scaling = 24 * 365
+        else:
+            assert frequency is None
+            scaling = 260
         return scaling
 
     def _calculate_drawdown_series(self):
@@ -115,6 +125,7 @@ class PortfolioResults(object):
         results_overview.loc['avg_gross_exposure'] = np.round(self._calculate_avg_gross_exposure(), 2)
         results_overview.loc['avg_net_exposure'] = np.round(self._calculate_avg_net_exposure(), 2)
         results_overview.name = self.name
+
         return results_overview
 
 
@@ -129,6 +140,8 @@ class Comparis(object):
         results = pd.DataFrame()
         for name, result in self.strategies.items():
             results = pd.concat([results, result.calculate_results_overview()], axis=1)
+        format_dict = {'mean_ann_return': '{:.2%}'}
+        results.style.format(format_dict)
         return results.sort_values(by='sharpe', axis=1, ascending=False)
 
     def plot_cumulative_returns(self):

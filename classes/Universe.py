@@ -9,7 +9,7 @@ from utils.dataset import DataSet
 class Universe(object):
     """ Universe class which holds market meta data which is read from JSON """
 
-    def __init__(self, universe, frequency):
+    def __init__(self, universe, frequency=""):
         """
         :param universe: the group of symbols for which meta data is loaded, see configs/universe.py
         """

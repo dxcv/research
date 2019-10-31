@@ -6,6 +6,7 @@ from pandas.tseries.offsets import BDay
 
 from utils.date_utils import get_nth_previous_month, get_nth_previous_year, get_nth_weekday_of_contract_month
 from utils.futures_utils import get_contract_month_from_code, get_last_trading_day_of_month_for_exchange, nearest
+from utils.dataset import DataSet
 
 
 class Future(object):
@@ -26,16 +27,24 @@ class Future(object):
         self.roll_rule = pd.read_excel('C:/Users/28ide/Data/Futures/futures_data/dailydata/futures_roll_rules.xlsx',
                                        index_col='Row')[symbol]
 
+        self.meta_data = self._load_meta_data()
+
         self.raw_data = self._load_cqg_data_from_disk()
         if 'exchange' in kwargs:
             self.exchange = kwargs['exchange']
         else:
-            self.exchange = 'CME'  # default exchange
+            self.exchange = self.meta_data.loc['Exchange']  # default exchange
 
         self.near_prices = None
         self.far_prices = None
         self.near_contracts = None
         self.far_contracts = None
+
+    def _load_meta_data(self):
+        meta_data_path = self.data_path.joinpath('meta.json')
+        meta_data = pd.read_json(meta_data_path)[self.symbol]
+        self.meta_data = meta_data
+        return meta_data
 
     def _load_cqg_data_from_disk(self):
         # loads close data from disk
@@ -332,6 +341,67 @@ class Future(object):
 
         return futures_price_df
 
+    def load_futures_data_from_disk(self):
+        # data for full universe should then have a fct that calls this fct and writes data_df into a dataset with
+        # key self.symbol
+        path = self.data_path.parents[0].joinpath('continuous_futures').joinpath(self.symbol + '_prices.csv')
+        if path.exists():
+            data_df = pd.read_csv(path, index_col=0, parse_dates=True)
+            print(" loaded data for market {} from disk".format(self.symbol))
+
+        else:
+            self.create_futures_price_df(write_to_disk=True)
+            print("stored continuous futures data for market {} to disk".format(self.symbol))
+            data_df = pd.read_csv(path, index_col=0, parse_dates=True)
+        data_df.name = self.symbol
+        return data_df
+
 # tya.raw_data.loc[near.index[4000]][tya.raw_data.loc[near.index[4000]]['ticker']=='F.US.TYAM12']['c']
 
 # -------------------------------------------
+
+
+class FuturesData(object):
+
+    def __init__(self, universe):
+        self.markets = universe
+        self.markets_data = DataSet()
+        self.price_data = DataSet()
+        self.returns = pd.DataFrame()
+        self.futures = DataSet()
+
+    def _read_futures_data(self):
+        for market in self.markets:
+            tmp = Future(market)
+            self.futures[market] = tmp
+            data = tmp.load_futures_data_from_disk()
+            self.markets_data[market] = data
+
+    def _get_cross_sectional_view(self, attribute='cont'):
+        df = pd.DataFrame()
+        if bool(self.markets_data) is False:
+            self._read_futures_data()
+        for key in self.markets_data:
+            data = self.markets_data[key][attribute]
+            data.name = self.markets_data[key].name
+            df = pd.concat([df, data], axis=1)
+            df.name = attribute
+        return df
+
+    def get_futures_prices_dataset(self):
+        series_types = ['cont', 'near', 'far']
+        prices_dataset = DataSet()
+        for series in series_types:
+            prices_dataset[series] = self._get_cross_sectional_view(attribute=series)
+        self.price_data = prices_dataset
+        return prices_dataset
+
+    def get_futures_returns(self):
+        if self.returns.empty:
+            returns = pd.DataFrame()
+            if bool(self.price_data) is False:
+                self.get_futures_prices_dataset()
+            returns = self.price_data.cont.diff() / self.price_data.near.shift(1)
+        else:
+            returns = self.returns
+        return returns

@@ -21,7 +21,10 @@ class HRP(object):
         self.constraints = None
         self.dates = prices.index
         self.window_length = window_length
-        self.returns = calculate_returns(self.prices)
+        if 'future_returns' in kwargs:
+            self.returns = kwargs['future_returns']
+        else:
+            self.returns = calculate_returns(self.prices)
         self.hrp_weights = pd.DataFrame(index=self.returns.index, columns=self.returns.columns)
         if 'cleaning' in kwargs:
             self.cleaning = True

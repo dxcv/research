@@ -12,7 +12,7 @@ class WalkForwardBtCompounding(object):
 
     def __init__(self, weights, prices, aum, **kwargs):
         """
-        Note: functions and attributes prepended with "_" are "private"
+        Note: functions and attributes prepended with "_" are "private", price data needs a well defined frequency!
         :param weights: dataframe of trading_signals / weights
         :param prices: dataframe of prices (equal to or longer than weights dates)
         :param aum: scalar with initial aum
@@ -98,13 +98,13 @@ class WalkForwardBtCompounding(object):
         self._initialize_pnl_per_instrument()
 
     def _initialize_date_information(self):
+        # todo: should handle frequency properly, needs to be aligned between weights and prices
         self.trading_dt_index = self.weights.index  # trading dates index
         self.price_date_index = self.close.index
         self.frequency = self.close.index.freq  # frequency of backtest
         self.bt_dt_index = self._construct_bt_dt_index()  # backtest date index
         # construct dates dataframe, index is date t, columns are dates t-1 and t+1
         self.dt_df = self._construct_dates_df()
-        self.frequency = self.close.index.freq  # frequency of backtest
 
     # -----------------------
     # from signal to weight
@@ -352,7 +352,7 @@ class WalkForwardBtCompounding(object):
             if date.is_year_end and date.time().hour is 23:
                 print("\nStrategy value for date " + str(date) + " for strategy calculated \n")
         backtest_dataset = DataSet()
-        backtest_dataset.holdings = holdings_df
+        backtest_dataset.holdings = holdings_df.resample(self.frequency).last()
         backtest_dataset.net_asset_value = net_asset_value_series.resample(self.frequency).last()
         backtest_dataset.cumulative_pnl_per_instrument = self._get_pnl_attribution()
         self._backtest = backtest_dataset
@@ -401,7 +401,7 @@ class WalkForwardBtNoCompounding(WalkForwardBtCompounding):
                 print("\nStrategy value for date " + str(date) + " for strategy calculated \n")
         backtest_dataset = DataSet()
         backtest_dataset.holdings = holdings_df
-        backtest_dataset.net_asset_value = net_asset_value_series.resample(self.frequency).last()
+        backtest_dataset.net_asset_value = net_asset_value_series
         self._backtest = backtest_dataset
 
         return self._backtest
