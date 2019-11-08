@@ -159,7 +159,7 @@ class WalkForwardBtCompounding(object):
     def _scale_weights(self):
         # ensures that we are never invested with leverage > leverage_max,
         scaled_weights_tmp = self.weights.copy()
-        scaled_weights = scaled_weights_tmp.apply(lambda x: self._weight_scaling_alternative(x), axis=1)
+        scaled_weights = scaled_weights_tmp.swifter.apply(lambda x: self._weight_scaling_alternative(x), axis=1)
         self.scaled_weights = scaled_weights
 
     # ----------------------------------------------------------------

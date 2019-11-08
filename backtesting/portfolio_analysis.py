@@ -16,13 +16,13 @@ class PortfolioResults(object):
         self.holdings = strategy.backtest.holdings
         self.instrument_prices = strategy.close
         self.portfolio_weights = strategy.scaled_weights
-        self.frequency = strategy.backtest.net_asset_value.index.freq
+        self.frequency = strategy.frequency
         if date is not None:
             self.net_asset_value = strategy.backtest.net_asset_value.loc[date:]
             self.holdings = strategy.backtest.holdings.loc[date:]
             self.instrument_prices = strategy.close.loc[date:]
             self.portfolio_weights = strategy.scaled_weights.loc[date:]
-            self.frequency = strategy.backtest.net_asset_value.index.freq
+            self.frequency = strategy.frequency
 
         self.name = name
 
@@ -141,7 +141,7 @@ class Comparis(object):
         for name, result in self.strategies.items():
             results = pd.concat([results, result.calculate_results_overview()], axis=1)
         format_dict = {'mean_ann_return': '{:.2%}'}
-        results.style.format(format_dict)
+        # results.style.format(format_dict)
         return results.sort_values(by='sharpe', axis=1, ascending=False)
 
     def plot_cumulative_returns(self):

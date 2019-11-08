@@ -11,7 +11,12 @@ def load_crypto_data_from_disk(universe_symbols, frequency):
 
     for crypto in universe_symbols:
         data_root = universe.universe_meta_data.loc[crypto]['DataRoot']
-        data_df = pd.read_csv(data_root + crypto + '_d.csv', skiprows=1, index_col='Date', parse_dates=True).sort_index()
+        if frequency != '1H':
+            data_df = pd.read_csv(data_root + crypto + '_d.csv', skiprows=1, index_col='Date', parse_dates=True).sort_index()
+        else:
+            data_df = pd.read_csv(data_root + crypto + '_1h.csv', skiprows=1, index_col='Date',
+                                  parse_dates=True).sort_index()
+            data_df.index = pd.to_datetime(data_df.index, format='%Y-%m-%d %I-%p')
         # todo: proper dynamic frequency
         data_df = data_df.resample(frequency).last()
         for date in data_df.index:

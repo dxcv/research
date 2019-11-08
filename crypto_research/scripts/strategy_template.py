@@ -6,7 +6,7 @@ import pandas as pd
 from backtesting.WalkForwardBacktest import WalkForwardBtCompounding, WalkForwardBtNoCompounding
 from data_loading.load_from_disk.load_equities_data import load_equities_data_from_disk
 from signals.momentum.time_series_momentum import exp_ma_crossover
-from utils.splines import spline_series, grd_spline
+from utils.splines import spline_series, cta_spline
 from utils.resampling_and_risk_metrics import calculate_sample_stats
 from configs.universe_spec import universe_tech
 from data_loading.query_from_api.query_data_from_iex import query_and_write_eod_data_for_symbols_from_iex
@@ -38,7 +38,7 @@ splined_cma = pd.DataFrame()
 
 for instrument in close_data:
     cma[instrument] = exp_ma_crossover(close_data[instrument], 2, 8, 20, vol_floor=0.1)
-    splined_cma[instrument] = spline_series(cma[instrument], grd_spline)
+    splined_cma[instrument] = spline_series(cma[instrument], cta_spline)
 
 splined_cma /= 2
 

@@ -7,6 +7,7 @@ import time
 import datetime as dt
 from tqdm import tqdm
 import pickle
+import swifter
 
 
 # -------------------------------------

@@ -93,4 +93,3 @@ def calculate_cleaned_cov_mat(df):
                 cov_mat.iloc[i, j] = corr.iloc[i, j] * cov_mat.iloc[i, i] **(1/2) * cov_mat.iloc[j, j] ** (1/2)
     return cov_mat
 
-
